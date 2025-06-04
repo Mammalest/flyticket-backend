@@ -58,4 +58,25 @@ router.post('/add-ticket', async (req, res) => {
   }
 });
 
+router.post('/delete-ticket', async (req, res) => {
+  const { ticket_id } = req.body;
+
+  if (!ticket_id) {
+    return res.status(400).json({ error: 'ticket id is required' });
+  }
+
+  try {
+    const result = await Ticket.deleteOne({ id });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    res.status(200).json({ message: 'Ticket deleted successfully' });
+  } catch (err) {
+    console.error('Delete Ticket error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

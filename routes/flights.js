@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import { v4 as uuidv4 } from 'uuid';
 import Flight from '../models/Flight.js';
+import City from '../models/City.js';
 
 async function generateUniqueId() {
   let id;
@@ -18,13 +19,30 @@ async function generateUniqueId() {
 
 router.get('/get-flights', async (req, res) => {
   try {
-    const flights = await Flight.find().limit(120); // Fetch max 120 flights (3 pages)
-    res.json(flights);
+    const flights = await Flight.find()
+      .limit(120)
+      .populate('from', 'name') // populate only the 'name' field
+      .populate('to', 'name');
+
+    // Transform flight data to include only city names
+    const simplifiedFlights = flights.map(flight => ({
+      id: flight.id,
+      from: flight.from.name,
+      to: flight.to.name,
+      departure_time: flight.departure_time,
+      arrival_time: flight.arrival_time,
+      price: flight.price,
+      seats_total: flight.seats_total,
+      seats_available: flight.seats_available
+    }));
+
+    res.json(simplifiedFlights);
   } catch (error) {
     console.error('Error fetching flights:', error);
     res.status(500).json({ error: 'Failed to fetch flights' });
   }
 });
+
 
 router.post('/delete-flight', async (req, res) => {
   const { id } = req.body;

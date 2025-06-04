@@ -3,7 +3,7 @@ const { Schema, model } = mongoose;
 
 const adminSchema = new mongoose.Schema({
   username: String,
-  password: String // bcrypt hashed
+  password: String
 });
 
 export default model('Admin', adminSchema);

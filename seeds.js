@@ -1,41 +1,104 @@
 import mongoose from 'mongoose';
 import Flight from './models/Flight.js';
 import City from './models/City.js';
+import Admin from './models/Admin.js';
+import Ticket from './models/Ticket.js';
 
 const MONGO_URI = 'mongodb://localhost:27017/flyticket';
 
 const flights = [
   {
-    id: '13131',
     from: 'İstanbul',
     to: 'İzmir',
     departure_time: new Date('2025-06-01T10:00:00Z'),
-    arrival_time: new Date('2025-06-01T18:00:00Z'),
+    arrival_time: new Date('2025-06-01T11:15:00Z'),
     price: 500,
     seats_total: 200,
     seats_available: 120
   },
   {
-    id: '13132',
     from: 'İzmir',
     to: 'Antalya',
-    departure_time: new Date('2025-06-01T10:00:00Z'),
-    arrival_time: new Date('2025-06-01T18:00:00Z'),
+    departure_time: new Date('2025-06-01T12:00:00Z'),
+    arrival_time: new Date('2025-06-01T13:30:00Z'),
     price: 750,
     seats_total: 220,
     seats_available: 180
   },
   {
-    id: '13134',
     from: 'Antalya',
     to: 'Ankara',
-    departure_time: new Date('2025-06-01T10:00:00Z'),
-    arrival_time: new Date('2025-06-01T18:00:00Z'),
+    departure_time: new Date('2025-06-01T14:00:00Z'),
+    arrival_time: new Date('2025-06-01T15:45:00Z'),
     price: 150,
     seats_total: 180,
     seats_available: 140
+  },
+  {
+    from: 'Ankara',
+    to: 'İstanbul',
+    departure_time: new Date('2025-06-02T08:00:00Z'),
+    arrival_time: new Date('2025-06-02T09:20:00Z'),
+    price: 320,
+    seats_total: 150,
+    seats_available: 150
+  },
+  {
+    from: 'İstanbul',
+    to: 'Antalya',
+    departure_time: new Date('2025-06-02T10:00:00Z'),
+    arrival_time: new Date('2025-06-02T11:45:00Z'),
+    price: 650,
+    seats_total: 200,
+    seats_available: 190
+  },
+  {
+    from: 'İzmir',
+    to: 'Ankara',
+    departure_time: new Date('2025-06-02T13:00:00Z'),
+    arrival_time: new Date('2025-06-02T14:40:00Z'),
+    price: 480,
+    seats_total: 180,
+    seats_available: 170
+  },
+  {
+    from: 'Antalya',
+    to: 'İzmir',
+    departure_time: new Date('2025-06-03T09:00:00Z'),
+    arrival_time: new Date('2025-06-03T10:30:00Z'),
+    price: 700,
+    seats_total: 160,
+    seats_available: 140
+  },
+  {
+    from: 'Ankara',
+    to: 'İzmir',
+    departure_time: new Date('2025-06-03T12:00:00Z'),
+    arrival_time: new Date('2025-06-03T13:40:00Z'),
+    price: 530,
+    seats_total: 160,
+    seats_available: 150
+  },
+  {
+    from: 'İstanbul',
+    to: 'Ankara',
+    departure_time: new Date('2025-06-03T15:00:00Z'),
+    arrival_time: new Date('2025-06-03T16:20:00Z'),
+    price: 400,
+    seats_total: 200,
+    seats_available: 180
+  },
+  {
+    from: 'Antalya',
+    to: 'İstanbul',
+    departure_time: new Date('2025-06-04T08:00:00Z'),
+    arrival_time: new Date('2025-06-04T09:45:00Z'),
+    price: 600,
+    seats_total: 180,
+    seats_available: 170
   }
 ];
+
 
 const cities = [
   { id: '01', name: 'Adana' }, { id: '02', name: 'Adıyaman' }, { id: '03', name: 'Afyonkarahisar' },
@@ -70,23 +133,24 @@ const cities = [
 async function seed() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
     // Clear existing data
     await Flight.deleteMany({});
     await City.deleteMany({});
-    console.log('✅ Cleared existing data');
+    await Admin.deleteMany({});
+    console.log('Cleared existing data');
 
     // Insert cities first
     const insertedCities = await City.insertMany(cities);
-    console.log('✅ Inserted cities');
+    console.log('Inserted cities');
 
     // Create a map from city name to _id
     const cityMap = new Map();
     insertedCities.forEach(city => cityMap.set(city.name, city._id));
 
     // Replace city names with ObjectIds in flights
-    const flightsWithIds = flights.map(flight => {
+    const flightsss = flights.map(flight => {
       const fromId = cityMap.get(flight.from);
       const toId = cityMap.get(flight.to);
 
@@ -102,13 +166,54 @@ async function seed() {
     });
 
     // Insert flights
-    await Flight.insertMany(flightsWithIds);
-    console.log('✅ Inserted flights');
+    await Flight.insertMany(flightsss);
+    console.log('Inserted flights');
+
+    // Insert flights
+const insertedFlights = await Flight.insertMany(flightsss);
+console.log('Inserted flights');
+
+// Prepare tickets, link to inserted flight IDs
+const ticketsToInsert = [
+  {
+    passenger_name: 'John',
+    passenger_surname: 'Doe',
+    passenger_email: 'john.doe@example.com',
+    flight_id: insertedFlights[0]._id,
+  },
+  {
+    passenger_name: 'Jane',
+    passenger_surname: 'Smith',
+    passenger_email: 'jane.smith@example.com',
+    flight_id: insertedFlights[1]._id,
+  },
+  {
+    passenger_name: 'Alice',
+    passenger_surname: 'Johnson',
+    passenger_email: 'alice.johnson@example.com',
+    flight_id: insertedFlights[0]._id,
+  }
+];
+
+await Ticket.insertMany(ticketsToInsert);
+console.log('Inserted tickets');
+
+
+
+    const admin = new Admin({
+      username: 'sero',
+      password: '123', // In real apps, hash this
+    });
+
+    // Insert Admin Creds
+    await Admin.insertOne(admin);
+    console.log('Admin Set');
+
 
     await mongoose.disconnect();
-    console.log('✅ Disconnected from MongoDB');
+    console.log('Disconnected from MongoDB');
   } catch (err) {
-    console.error('❌ Error:', err);
+    console.error('Error:', err);
   }
 }
 

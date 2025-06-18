@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 
 const flightSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
   from: { type: Schema.Types.ObjectId, ref: 'City', required: true },
   to: { type: Schema.Types.ObjectId, ref: 'City', required: true },
   departure_time: { type: Date, required: true },
